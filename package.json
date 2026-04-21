@@ -10,12 +10,12 @@
     "postinstall": "node scripts/patch-tldraw.js"
   },
   "dependencies": {
-    "@tldraw/sync": "^4.2.1",
+    "@tldraw/sync": "^4.5.10",
     "@vercel/analytics": "^1.6.1",
-    "next": "^16.0.10",
+    "next": "^16.2.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "tldraw": "^4.2.1",
+    "tldraw": "^4.5.10",
     "unfurl.js": "^6.4.0"
   },
   "devDependencies": {
