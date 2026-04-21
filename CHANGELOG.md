@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/noa-santo/draw/compare/draw-v0.1.1...draw-v0.1.2) (2026-04-21)
+
+
+### Features
+
+* update tldraw ([a914ce4](https://github.com/noa-santo/draw/commit/a914ce47aa4974aca6eb0eb3f107dc8004c5a7c4))
+* update tldraw ([eae45e0](https://github.com/noa-santo/draw/commit/eae45e0aab0e2b00a5c1cad5490106de6d010637))
+
 ## [0.1.1](https://github.com/virus-rpi/draw/compare/draw-v0.1.0...draw-v0.1.1) (2025-12-17)
 
 
