@@ -40,7 +40,7 @@ app.register(async ( app ) => {
         }
     })
 
-    app.addContentTypeParser('application/json', {parseAs: 'string'}, ( req, body, done ) => {
+    app.addContentTypeParser('application/json', {parseAs: 'string'}, ( _, body, done ) => {
         try {
             const json = JSON.parse(body as string)
             done(null, json)
@@ -50,9 +50,9 @@ app.register(async ( app ) => {
         }
     })
 
-    app.addContentTypeParser('*', ( _, payload, done ) => done(null))
+    app.addContentTypeParser('*', ( _req, _in, done ) => done(null))
 
-    app.put('/uploads/:id', async ( req, res ) => {
+    app.put('/uploads/:id', async ( req, _ ) => {
         const id = (req.params as any).id as string
         await storeAsset(id, req.raw)
         return {ok: true}
@@ -68,7 +68,7 @@ app.register(async ( app ) => {
         res.send(await unfurl(url))
     })
 
-    app.get('/health', async ( req, res ) => {
+    app.get('/health', async ( _req, _res ) => {
         return {
             status: 'ok',
             timestamp: new Date().toISOString(),
@@ -104,13 +104,13 @@ app.register(async ( app ) => {
         return result
     })
 
-    app.get('/color-locks/:roomId', async ( req, res ) => {
+    app.get('/color-locks/:roomId', async ( req, _ ) => {
         const roomId = (req.params as any).roomId as string
         const locks = getAllLockedColors(roomId)
         return {locks}
     })
 
-    app.get('/user-locked-color/:roomId/:userId', async ( req, res ) => {
+    app.get('/user-locked-color/:roomId/:userId', async ( req, _ ) => {
         const roomId = (req.params as any).roomId as string
         const userId = (req.params as any).userId as string
         const lockedColor = getUserLockedColor(roomId, userId)
