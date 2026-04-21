@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Editor, Tldraw, useToasts, useDialogs } from 'tldraw'
+import { Editor, Tldraw, useDialogs, useToasts } from 'tldraw'
 import { useSync } from '@tldraw/sync'
 import 'tldraw/tldraw.css'
 import { useColorLock } from './useColorLock'
@@ -19,34 +19,35 @@ import { usePageVisibility } from './hooks/usePageVisibility'
 import './config/theme'
 
 
-
 export default function TldrawEditor() {
-    const { roomId, userId } = useRoomSetup()
+    const {roomId, userId} = useRoomSetup()
     const [writeOwnOnly, setWriteOwnOnly] = useState<boolean>(true)
     const editorRef = useRef<Editor | null>(null)
     const toastAddRef = useRef<ReturnType<typeof useToasts>['addToast'] | null>(null)
     const dialogsRef = useRef<ReturnType<typeof useDialogs> | null>(null)
+    const customMessageHandlerRef = useRef<(( data: any ) => void) | null>(null)
 
-    const colorLock = useColorLock(roomId, userId)
+    const colorLock = useColorLock(roomId, userId, ( handler ) => {
+        customMessageHandlerRef.current = handler
+    })
     const {myLockedColor, lockColor, unlockColor, canUseColor, lockedColors} = colorLock
 
-    const { setupEditorHandlers } = useEditorHandlers({
+    const {setupEditorHandlers} = useEditorHandlers({
         writeOwnOnly,
         canUseColor,
         lockedColors,
         userId,
     })
 
-    // Handle collaborator join/leave notifications - always enabled
     useCollaboratorNotifications({
         editor: editorRef.current,
-        onJoin: (presence) => {
+        onJoin: ( presence ) => {
             toastAddRef.current?.({
                 title: `${presence.userName || 'A user'} joined`,
                 severity: 'info',
             })
         },
-        onLeave: (presence) => {
+        onLeave: ( presence ) => {
             toastAddRef.current?.({
                 title: `${presence.userName || 'A user'} left`,
                 severity: 'info',
@@ -54,7 +55,6 @@ export default function TldrawEditor() {
         },
     })
 
-    // Handle page visibility and draw notifications - always enabled
     usePageVisibility({
         editor: editorRef.current,
         onDrawWhileAway: () => {
@@ -64,7 +64,6 @@ export default function TldrawEditor() {
             })
         },
     })
-
 
 
     const handleColorLockClick = () => {
@@ -83,11 +82,11 @@ export default function TldrawEditor() {
         }
 
         dialogs.addDialog({
-            component: ({ onClose }) => (
+            component: ( {onClose} ) => (
                 <ColorLockDialog
                     color={currentColor}
                     isLocking={true}
-                    onConfirm={async (color, password) => {
+                    onConfirm={async ( color, password ) => {
                         const myLock = lockedColors.find(lock => lock.color === color && lock.userId === userId)
                         let result
                         if (myLock) {
@@ -110,7 +109,6 @@ export default function TldrawEditor() {
     }
 
 
-
     const store = useSync({
         uri: getSyncUrl(roomId),
         assets: multiplayerAssets,
@@ -119,6 +117,11 @@ export default function TldrawEditor() {
             name: `User ${userId.slice(0, 8)}`,
             ...(myLockedColor ? {color: myLockedColor} : {}),
         } : undefined,
+        onCustomMessageReceived: ( data: any ) => {
+            if (customMessageHandlerRef.current) {
+                customMessageHandlerRef.current(data)
+            }
+        },
     })
 
     if (!roomId) {
