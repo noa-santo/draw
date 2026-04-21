@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { getSyncServerHttpBaseUrl, getSyncServerWsBaseUrl } from './utils/syncUrl'
 
 export interface LockedColor {
     color: string
@@ -11,18 +12,6 @@ export interface ColorLockResult {
     previousLock?: string
 }
 
-const getSyncServerUrl = () => {
-    if (process.env.NEXT_PUBLIC_SYNC_SERVER_URL) {
-        return process.env.NEXT_PUBLIC_SYNC_SERVER_URL
-    }
-    return 'http://localhost:5858'
-}
-
-const getWsServerUrl = () => {
-    const baseUrl = getSyncServerUrl()
-    return baseUrl.replace(/^http/, 'ws')
-}
-
 export function useColorLock( roomId: string, userId: string ) {
     const [lockedColors, setLockedColors] = useState<LockedColor[]>([])
     const [myLockedColor, setMyLockedColor] = useState<string | null>(null)
@@ -32,7 +21,7 @@ export function useColorLock( roomId: string, userId: string ) {
         if (!roomId) return
 
         try {
-            const response = await fetch(`${getSyncServerUrl()}/color-locks/${encodeURIComponent(roomId)}`)
+            const response = await fetch(`${getSyncServerHttpBaseUrl()}/color-locks/${encodeURIComponent(roomId)}`)
             const data = await response.json()
             setLockedColors(data.locks || [])
 
@@ -48,7 +37,7 @@ export function useColorLock( roomId: string, userId: string ) {
 
         fetchLockedColors().then()
 
-        const wsUrl = `${getWsServerUrl()}/color-locks-ws/${encodeURIComponent(roomId)}`
+        const wsUrl = `${getSyncServerWsBaseUrl()}/color-locks-ws/${encodeURIComponent(roomId)}`
         const ws = new WebSocket(wsUrl)
 
         ws.onopen = () => {
@@ -88,7 +77,7 @@ export function useColorLock( roomId: string, userId: string ) {
 
     const lockColor = useCallback(async ( color: string, password: string ): Promise<ColorLockResult> => {
         try {
-            const response = await fetch(`${getSyncServerUrl()}/color-lock/${encodeURIComponent(roomId)}`, {
+            const response = await fetch(`${getSyncServerHttpBaseUrl()}/color-lock/${encodeURIComponent(roomId)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +100,7 @@ export function useColorLock( roomId: string, userId: string ) {
 
     const unlockColor = useCallback(async ( color: string, password: string ): Promise<ColorLockResult> => {
         try {
-            const response = await fetch(`${getSyncServerUrl()}/color-unlock/${encodeURIComponent(roomId)}`, {
+            const response = await fetch(`${getSyncServerHttpBaseUrl()}/color-unlock/${encodeURIComponent(roomId)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
